@@ -16,19 +16,22 @@ var state = false;
 
 requestSunsetTime();
 
-cron.schedule("* * * * *", () => {
+cron.schedule("0 6 * * *", () => {
+  //Every day at 6:00 AM, request Sunset time of the day
   requestSunsetTime();
 });
 
 cron.schedule("* * * * *", () => {
+  //At every minute verify current time with Sunset Time and Turn off Time
   handleLamp();
 });
 
 
 function requestSunsetTime() {
 
-  const api = program.dev ? "http://localhost:3001/fake" : "https://api.sunrise-sunset.org/json";
+  const api = program.dev ? config.api.dev : config.api.prod;
   const params = `?lat=${config.latitude}&lng=${config.longitude}`;
+  console.log(`${api}${params}`);
 
   axios.get(`${api}${params}`)
   .then(function (response) {
@@ -51,13 +54,13 @@ function handleLamp() {
   if (now >= sunset && now < turnOffTime && !state) {
     state = true;
     // relay.writeSync(state);
-    console.log('Ligando a lampada ');
+    console.log('Turn On');
   }
 
   if (now >= turnOffTime && state) {
     state = false;
     // relay.writeSync(state);
-    console.log('Desligando a lampada');
+    console.log('Turn Off');
   }
 
 }

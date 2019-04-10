@@ -1,5 +1,9 @@
 {
     "latitude": "-12.964241",
     "longitude": "-38.499837",
-    "turnOffTime": "19:43:00 PM"
+    "turnOffTime": "19:43:00 PM",
+    "api": {
+        "prod": "https://api.sunrise-sunset.org/json",
+        "dev": "http://localhost:3001/fake"
+    }
 }
