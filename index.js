@@ -6,6 +6,9 @@ const config = require('./config');
 
 // const relay = new Gpio(17, 'out');
 
+var program = require('commander');
+
+program.option('--dev', 'Development Mode (Fake API)').parse(process.argv);
 
 var sunset = 0;
 var turnOffTime = moment(config.turnOffTime, 'h:mm:ss a').format('X');
@@ -24,8 +27,7 @@ cron.schedule("* * * * *", () => {
 
 function requestSunsetTime() {
 
-  // const api = "https://api.sunrise-sunset.org/json";
-  const api = "http://localhost:3001/fake";
+  const api = program.dev ? "http://localhost:3001/fake" : "https://api.sunrise-sunset.org/json";
   const params = `?lat=${config.latitude}&lng=${config.longitude}`;
 
   axios.get(`${api}${params}`)
