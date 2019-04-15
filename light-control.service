@@ -1,0 +1,12 @@
+[Unit]
+Description=Light Control
+[Service]
+PIDFile=/tmp/light-control.pid
+User=pi
+Group=pi
+Restart=always
+KillSignal=SIGQUIT
+WorkingDirectory=/home/pi/rpi-light-control/
+ExecStart=/home/pi/rpi-light-control/index.js
+[Install]
+WantedBy=multi-user.target
