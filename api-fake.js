@@ -12,7 +12,7 @@ app.get('/fake', function (req, res) {
     let data = {
         "results": {
           "sunrise": "8:39:12 AM",
-          "sunset": "22:30:46 PM",
+          "sunset": "15:30:46 PM",
           "solar_noon": "2:35:29 PM",
           "day_length": "11:52:34",
           "civil_twilight_begin": "8:17:53 AM",

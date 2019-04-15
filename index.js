@@ -5,17 +5,16 @@ const moment = require('moment');
 const cron = require('node-cron');
 const config = require('./config');
 const fs = require('fs');
-// const Gpio = require('onoff').Gpio;
+const Gpio = require('onoff').Gpio;
 
-// const relay = new Gpio(17, 'out');
+const relay = new Gpio(17, 'out');
 
 var program = require('commander');
 
 program.option('--dev', 'Development Mode (Fake API)').parse(process.argv);
 
-var sunset = config.cache.sunset ? moment(config.cache.sunset, 'h:mm:ss a').format('X') : 0;
-console.log(sunset);
-var turnOffTime = moment.utc(config.turnOffTime, 'h:mm:ss a').local().format('X');
+var sunset = (typeof config.cache.sunset !== 'undefined') ? moment(config.cache.sunset, 'h:mm:ss a').format('X') : 0;
+var turnOffTime = moment(config.turnOffTime, 'h:mm:ss a').local().format('X');
 var state = false;
 
 requestSunsetTime();
@@ -44,7 +43,6 @@ function requestSunsetTime() {
       sunset = m.local().format('X');
       writeCache('sunset', m.local().format('h:mm:ss a'));
       handleLamp();
-      console.log(sunset);
 
   }).catch(function (error) {
     console.log(error);
@@ -56,13 +54,13 @@ function handleLamp() {
 
   if (now >= sunset && now < turnOffTime && !state) {
     state = true;
-    // relay.writeSync(state);
+    relay.writeSync(1);
     console.log('Turn On');
   }
 
   if (now >= turnOffTime && state) {
     state = false;
-    // relay.writeSync(state);
+    relay.writeSync(0);
     console.log('Turn Off');
   }
 
@@ -77,6 +75,8 @@ function writeCache(key, value) {
       console.log(err);
     } else {
       console.log("Update cache");
+      console.log(moment.unix(sunset).format("DD/MM/YYYY kk:mm:ss"));
+      console.log(moment.unix(turnOffTime).format("DD/MM/YYYY kk:mm:ss"));
     }
   });
 }
