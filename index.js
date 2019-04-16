@@ -29,6 +29,31 @@ cron.schedule("* * * * *", () => {
   handleLamp();
 });
 
+var express = require('express');
+
+var app = express();
+
+app.get('/light', function (req, res) {
+  let data = {
+    "status": "OK"
+  }
+  console.log("Request");
+  
+  state = !state;
+  turnLamp(state);
+  
+
+  res.json(data);
+});
+
+var server = app.listen(3001, function () {
+  var host = server.address().address;
+  var port = server.address().port;
+
+  console.log('Example app listening at http://%s:%s', host, port);
+
+});
+
 
 function requestSunsetTime() {
 
@@ -53,17 +78,21 @@ function handleLamp() {
   var now = moment().format("X");
 
   if (now >= sunset && now < turnOffTime && !state) {
-    state = true;
-    relay.writeSync(1);
-    console.log('Turn On');
+    state = turnLamp(true);
   }
 
   if (now >= turnOffTime && state) {
-    state = false;
-    relay.writeSync(0);
-    console.log('Turn Off');
+    state = turnLamp(false);
   }
 
+}
+
+function turnLamp(state) {
+  let relayVal = state ? 1 : 0;
+  let log = state ? 'Turn On' : 'Turn Off';
+  relay.writeSync(relayVal);
+  console.log(log);
+  return state;
 }
 
 function writeCache(key, value) {
