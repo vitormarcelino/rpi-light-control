@@ -5,9 +5,9 @@ const moment = require('moment');
 const cron = require('node-cron');
 const config = require('./config');
 const fs = require('fs');
-const Gpio = require('onoff').Gpio;
+// const Gpio = require('onoff').Gpio;
 
-const relay = new Gpio(17, 'out');
+// const relay = new Gpio(17, 'out');
 
 var program = require('commander');
 
@@ -37,7 +37,6 @@ app.get('/light', function (req, res) {
   let data = {
     "status": "OK"
   }
-  console.log("Request");
   
   state = !state;
   turnLamp(state);
@@ -90,7 +89,7 @@ function handleLamp() {
 function turnLamp(state) {
   let relayVal = state ? 1 : 0;
   let log = state ? 'Turn On' : 'Turn Off';
-  relay.writeSync(relayVal);
+  // relay.writeSync(relayVal);
   console.log(log);
   return state;
 }
