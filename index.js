@@ -14,14 +14,14 @@ var program = require('commander');
 program.option('--dev', 'Development Mode (Fake API)').parse(process.argv);
 
 var sunset = (typeof config.cache.sunset !== 'undefined') ? moment(config.cache.sunset, 'h:mm:ss a').format('X') : 0;
-var turnOffTime = moment(config.turnOffTime, 'h:mm:ss a').local().format('X');
+var turnOffTime = 0;
 var state = false;
 
-requestSunsetTime();
+configure();
 
 cron.schedule("0 6 * * *", () => {
   //Every day at 6:00 AM, request Sunset time of the day
-  requestSunsetTime();
+  configure();
 });
 
 cron.schedule("* * * * *", () => {
@@ -54,10 +54,11 @@ var server = app.listen(3001, function () {
 });
 
 
-function requestSunsetTime() {
+function configure() {
 
   const api = program.dev ? config.api.dev : config.api.prod;
   const params = `?lat=${config.latitude}&lng=${config.longitude}`;
+  turnOffTime = moment(config.turnOffTime, 'h:mm:ss a').local().format('X');
 
   axios.get(`${api}${params}`)
   .then(function (response) {
