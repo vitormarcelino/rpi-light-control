@@ -22,7 +22,7 @@ start();
 async function start() {
   await requestSunsetTime();
   await configure();
-  handleLamp();
+  handleLamp(true);
 }
 
 function configure() {
@@ -41,7 +41,7 @@ function configure() {
 
 cron.schedule("0 6 * * *", () => {
   //Every day at 6:00 AM, request Sunset time of the day
-  configure();
+  start();
 });
 
 cron.schedule("* * * * *", () => {
@@ -90,7 +90,7 @@ function requestSunsetTime() {
   });
 }
 
-function handleLamp() {
+function handleLamp(print = false) {
   let now = {
     hour: moment().format("HH"),
     minutes: moment().format("mm")
@@ -105,6 +105,15 @@ function handleLamp() {
     hour: moment.unix(turnOffTime).format("HH"),
     minutes: moment.unix(turnOffTime).format("mm")
   };
+
+  if(print === true) {
+    console.log("now")
+    console.log(now)
+    console.log("sunset")
+    console.log(sunset)
+    console.log("turnoff")
+    console.log(turnoff)
+  }
 
   if (now.hour >= sunset.hour && now.minutes >= sunset.minutes 
       && now.hour <= turnoff.hour && now.minutes <= turnoff.minutes && !state) {
