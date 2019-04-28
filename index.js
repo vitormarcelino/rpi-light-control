@@ -116,7 +116,7 @@ function handleLamp(print = false) {
   }
 
   if (now.hour >= sunset.hour && now.minutes >= sunset.minutes 
-      && now.hour <= turnoff.hour && now.minutes <= turnoff.minutes && !state) {
+      && now.hour <= turnoff.hour && !state) {
     state = turnLamp(true);
   }
 
