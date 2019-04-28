@@ -41,7 +41,7 @@ function configure() {
 
 cron.schedule("0 6 * * *", () => {
   //Every day at 6:00 AM, request Sunset time of the day
-  requestSunsetTime();
+  configure();
 });
 
 cron.schedule("* * * * *", () => {
@@ -54,14 +54,11 @@ var express = require('express');
 var app = express();
 
 app.get('/light', function (req, res) {
-  let data = {
-    "status": "OK"
-  }
-  
   state = !state;
   turnLamp(state);
-  
-  res.json(data);
+
+  let response = (state) ? "Luzes Acesas" : "Luzes Apagadas";
+  res.send(response);
 });
 
 var server = app.listen(3001, function () {
