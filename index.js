@@ -13,34 +13,20 @@ var program = require('commander');
 
 program.option('--dev', 'Development Mode (Fake API)').parse(process.argv);
 
-var sunsetTime = 0;
-var turnOffTime = 0;
+var sunset = 0;
+var turnoff = 0;
 var state = false;
 
 start();
 
 async function start() {
   await requestSunsetTime();
-  await configure();
+  turnoff = moment(config.turnOffTime, 'h:mm:ss a').format('X');
   handleLamp(true);
 }
 
-function configure() {
-  return new Promise(resolve => {
-    sunsetTime = (typeof config.cache.sunset !== 'undefined') ? moment(config.cache.sunset, 'h:mm:ss a').format('X') : 0;
-    turnOffTime = moment(config.turnOffTime, 'h:mm:ss a').local().format('X');
-    state = false;
-
-    setTimeout(() => {
-      console.log("Configuration: OK");
-      resolve("Ok");
-    }, 500);
-
-  });
-}
-
-cron.schedule("0 6 * * *", () => {
-  //Every day at 6:00 AM, request Sunset time of the day
+cron.schedule("0 5 * * *", () => {
+  //Every day at 5:00 AM, request Sunset time of the day
   start();
 });
 
@@ -69,58 +55,48 @@ var server = app.listen(3001, function () {
 
 function requestSunsetTime() {
   return new Promise((resolve, reject) => {
+    let today = moment().format('YYYY-MM-DD')
     const api = program.dev ? config.api.dev : config.api.prod;
-    const params = `?lat=${config.latitude}&lng=${config.longitude}`;
+    const params = `?lat=${config.latitude}&lng=${config.longitude}&date=${today}&formatted=0`;
 
     axios.get(`${api}${params}`)
     .then(function (response) {
         var date = response.data.results.sunset;
-        var m = moment.utc(date, 'h:mm:ss a');
+        var m = moment(date);
 
-        sunsetTime = m.local().format('X');
+        sunset = m.local().format('X');
         writeCache('sunset', m.local().format('h:mm:ss a'));
 
         console.log("Resquest: OK");
         resolve();
 
     }).catch(function (error) {
-      console.log("Reject");
-      reject();
+      sunset = moment(config.cache.sunset, 'h:mm:ss a').format('X');
+      resolve();
     });
   });
 }
 
-function handleLamp(print = false) {
-  let now = {
-    hour: moment().format("HH"),
-    minutes: moment().format("mm")
-  };
+async function handleLamp(print = false) {
 
-  let sunset = {
-    hour: moment.unix(sunsetTime).format("HH"),
-    minutes: moment.unix(sunsetTime).format("mm")
-  };
-
-  let turnoff = {
-    hour: moment.unix(turnOffTime).format("HH"),
-    minutes: moment.unix(turnOffTime).format("mm")
-  };
-
+  let now = moment().format('X');
+  
   if(print === true) {
-    console.log("now")
-    console.log(now)
-    console.log("sunset")
-    console.log(sunset)
-    console.log("turnoff")
-    console.log(turnoff)
+    console.log("==== SUNSET ====")
+    console.log(moment.unix(sunset).format("lll"));
+
+    console.log("==== NOW ====")
+    console.log(moment.unix(now).format("lll"));
+
+    console.log("==== TURNOFF ====")
+    console.log(moment.unix(turnoff).format("lll"));
   }
 
-  if (now.hour >= sunset.hour && now.minutes >= sunset.minutes 
-      && now.hour <= turnoff.hour && !state) {
+  if (now > sunset && now < turnoff && !state) {
     state = turnLamp(true);
   }
 
-  if (now.hour == turnoff.hour && now.minutes == turnoff.minutes && state) {
+  if (now >= turnoff && state) {
     state = turnLamp(false);
   }
 
